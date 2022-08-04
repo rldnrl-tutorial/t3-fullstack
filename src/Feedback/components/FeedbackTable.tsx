@@ -1,11 +1,15 @@
 import { Feedback } from "@/libs/types/feedback";
 import { Table, Tag } from "@/libs/ui";
+import Loading from "@/libs/ui/Loading";
+import { trpc } from "@/utils/trpc";
 
-interface FeedbackTableProps {
-  readonly feedbacks: Feedback[];
-}
+export default function FeedbackTable() {
+  const feedbacksQuery = trpc.useQuery(["feedback.all"]);
 
-export default function FeedbackTable({ feedbacks }: FeedbackTableProps) {
+  if (feedbacksQuery.isLoading) {
+    return <Loading />;
+  }
+
   const renderTag = (feedbackType: Feedback["feedbackType"]) => {
     switch (feedbackType) {
       case "FEEDBACK":
@@ -29,21 +33,23 @@ export default function FeedbackTable({ feedbacks }: FeedbackTableProps) {
           </Table.Row>
         </Table.Head>
         <Table.Body>
-          {feedbacks.map(({ name, email, message, feedbackType }) => (
-            <Table.Row
-              key={name}
-              className="bg-white dark:border-gray-700 dark:bg-gray-800"
-            >
-              <Table.Cell className="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                {name}
-              </Table.Cell>
-              <Table.Cell className="px-6 py4">{email}</Table.Cell>
-              <Table.Cell className="px-6 py4">{message}</Table.Cell>
-              <Table.Cell className="px-6 py4">
-                {renderTag(feedbackType)}
-              </Table.Cell>
-            </Table.Row>
-          ))}
+          {feedbacksQuery.data?.map(
+            ({ name, email, message, feedbackType }) => (
+              <Table.Row
+                key={name}
+                className="bg-white dark:border-gray-700 dark:bg-gray-800"
+              >
+                <Table.Cell className="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                  {name}
+                </Table.Cell>
+                <Table.Cell className="px-6 py4">{email}</Table.Cell>
+                <Table.Cell className="px-6 py4">{message}</Table.Cell>
+                <Table.Cell className="px-6 py4">
+                  {renderTag(feedbackType)}
+                </Table.Cell>
+              </Table.Row>
+            )
+          )}
         </Table.Body>
       </Table>
     </div>
